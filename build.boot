@@ -14,7 +14,7 @@
   '[boot.util        :as util]
   '[boot.core        :as core])
 
-(def +version+ "0.1.0-SNAPSHOT")
+(def +version+ "0.1.0")
 
 (bootlaces! +version+)
 
