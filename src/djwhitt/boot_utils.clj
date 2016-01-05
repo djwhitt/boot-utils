@@ -2,12 +2,13 @@
   {:boot/export-tasks true}
   (:require
     [boot.core :as core]
+    [boot.util :as util]
     [cheshire.core :as cheshire]
-    [clojure.stacktrace :refer [print-stack-trace]]
     [clojure.java.shell :as sh]
+    [clojure.stacktrace :refer [print-stack-trace]]
+    [clojure.test]
     [ns-tracker.core :refer :all]
-    [reloaded.repl :refer [set-init! reset go]]
-    [boot.util :as util])
+    [reloaded.repl :refer [set-init! reset go]])
   (:import
     [java.io File FileOutputStream]))
 
@@ -41,10 +42,10 @@
 ;; Derived from: https://github.com/danielsz/system/blob/master/src/system/boot.clj
 (core/deftask dev-system
   "Load dev namespace, start system, and reset when files change."
-  [d dev-ns     DEV-NS sym  "Dev namespace (must call reloaded.repl/set-init!)."
-   a auto-start        bool "Auto-starts the system."
-   r hot-reload        bool "Enables hot-reloading."
-   n notifier          code "Notification function."]
+  [d dev-ns     DEV-NS sym   "Dev namespace (must call reloaded.repl/set-init!)."
+   a auto-start        bool  "Auto-starts the system."
+   r hot-reload        bool  "Enables hot-reloading."
+   t test-ns-regex     regex "Regex matching namespaces with tests to run after refresh."]
   (let [fs-prev-state (atom nil)
         dirs (core/get-env :directories)
         modified-namespaces (ns-tracker (into [] dirs))
@@ -63,6 +64,11 @@
                           #'*e   nil}
             (let [result (reset)]
               (when *e (throw *e))))))
+      (when test-ns-regex
+        (util/info (str "Running tests matching: " test-ns-regex "\n"))
+        (let [{:as test-results :keys [fail error]} (clojure.test/run-all-tests test-ns-regex)]
+          (when (or (> fail 0) (> error 0))
+            (throw (ex-info "Test failure or error" test-results)))))
       (reset! fs-prev-state fileset))))
 
 (core/deftask run
