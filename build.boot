@@ -1,7 +1,7 @@
 (set-env!
   :source-paths #{"src"}
   :dependencies
-  '[[adzerk/bootlaces "0.1.11" :scope "test"]
+  '[[adzerk/bootlaces "0.1.13" :scope "test"]
     [boot/core "2.1.2" :scope "provided"]
     [cheshire "5.5.0"]
     [ns-tracker "0.3.0"]
@@ -14,7 +14,7 @@
   '[boot.util        :as util]
   '[boot.core        :as core])
 
-(def +version+ "0.1.0")
+(def +version+ "0.2.0-SNAPSHOT")
 
 (bootlaces! +version+)
 

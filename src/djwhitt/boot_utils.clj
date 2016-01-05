@@ -53,10 +53,7 @@
                        (require dev-ns)
                        (util/info (str "Autostarting the system: " (go) "\n"))))
         set-refresh-dirs (delay
-                           (apply clojure.tools.namespace.repl/set-refresh-dirs dirs))
-        notifier (if notifier
-                   notifier
-                   (fn [& _]))]
+                           (apply clojure.tools.namespace.repl/set-refresh-dirs dirs))]
     (core/with-pre-wrap fileset
       @set-refresh-dirs
       @auto-start
@@ -65,11 +62,7 @@
           (with-bindings {#'*ns* *ns* ; because of exception "Can't set!: *ns* from non-binding thread"
                           #'*e   nil}
             (let [result (reset)]
-              (if *e
-                (do
-                  (notifier {:title "Clojure Refresh" :message "Error!" :urgency "critical"})
-                  (print-stack-trace *e))
-                (notifier {:title "Clojure Refresh" :message "Success!"}))))))
+              (when *e (throw *e))))))
       (reset! fs-prev-state fileset))))
 
 (core/deftask run
@@ -96,7 +89,6 @@
       (fn [fileset]
         (try
           (util/with-let [_ (next-task fileset)]
-            ;; TODO: alert on error
             (if (zero? @core/*warnings*)
               (notifier base-notification (:success messages))
               (notifier base-notification (format (:warning messages) @core/*warnings*) "critical")))
