@@ -9,5 +9,6 @@ Code was taken from the following projects and modified:
 
 - https://github.com/danielsz/system
 - https://github.com/jeluard/boot-notify
+- https://github.com/adzerk-oss/boot-reload
 
 Thanks to the authors of those projects for making their code available.
