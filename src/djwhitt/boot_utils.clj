@@ -42,10 +42,10 @@
 ;; Derived from: https://github.com/danielsz/system/blob/master/src/system/boot.clj
 (core/deftask dev-system
   "Load dev namespace, start system, and reset when files change."
-  [d dev-ns     DEV-NS sym   "Dev namespace (must call reloaded.repl/set-init!)."
-   a auto-start        bool  "Auto-starts the system."
-   r hot-reload        bool  "Enables hot-reloading."
-   t test-ns-regex     regex "Regex matching namespaces with tests to run after refresh."]
+  [d dev-ns        NS    sym   "Dev namespace (must call reloaded.repl/set-init!)."
+   a auto-start          bool  "Auto-starts the system."
+   r hot-reload          bool  "Enables hot-reloading."
+   t test-ns-regex REGEX regex "Regex matching namespaces with tests to run after refresh."]
   (let [fs-prev-state (atom nil)
         dirs (core/get-env :directories)
         modified-namespaces (ns-tracker (into [] dirs))
@@ -73,8 +73,8 @@
 
 (core/deftask run
   "Run the -main function in some namespace with arguments."
-  [m main-namespace NAMESPACE str   "The namespace containing a -main function to invoke."
-   a arguments      EXPR      [edn] "An optional argument sequence to apply to the -main function."]
+  [m main-namespace NS   str   "The namespace containing a -main function to invoke."
+   a arguments      ARGS [edn] "An optional argument sequence to apply to the -main function."]
   (core/with-pre-wrap fs
     (require (symbol main-namespace) :reload)
     (if-let [f (resolve (symbol main-namespace "-main"))]
@@ -85,9 +85,9 @@
 ;; Derived from: https://github.com/jeluard/boot-notify/blob/master/src/jeluard/boot_notify.clj
 (core/deftask notify
   "Visible notifications during build."
-  [m template FOO=BAR  {kw str}  "Templates overriding default messages. Keys can be :success, :warning or :failure."
-   t title             str       "Title of the notification."
-   n notifier          code      "Notification function."]
+  [m template TYPE=MSG {kw str} "Templates overriding default messages. Keys can be :success, :warning or :failure."
+   t title    TITLE    str      "Title of the notification."
+   n notifier EXPR     code     "Notification function."]
   (let [title (or title "Boot notify")
         base-notification {:title title :urgency "normal"}
         messages (merge {:success "Success!" :warning "%s warning/s" :failure "%s"} template)]
