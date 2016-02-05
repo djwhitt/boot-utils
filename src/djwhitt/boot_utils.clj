@@ -8,8 +8,8 @@
     [clojure.java.shell :as sh]
     [clojure.stacktrace :refer [print-stack-trace]]
     [clojure.test]
-    [ns-tracker.core :refer :all]
-    [reloaded.repl :refer [set-init! reset go]])
+    [clojure.tools.namespace.repl]
+    [ns-tracker.core :refer :all])
   (:import
     [java.io File FileOutputStream]))
 
@@ -43,27 +43,31 @@
 ;; Derived from: https://github.com/danielsz/system/blob/master/src/system/boot.clj
 (core/deftask dev-system
   "Load dev namespace, start system, and reset when files change."
-  [d dev-ns        NS    sym   "Dev namespace (must call reloaded.repl/set-init!)."
-   a auto-start          bool  "Auto-starts the system."
-   r hot-reload          bool  "Enables hot-reloading."
-   t test-ns-regex REGEX regex "Regex matching namespaces with tests to run after refresh."]
+  [d dev-ns         NS    sym   "Dev namespace."
+   a start-fn       FN    sym   "Function to run on initial load."
+   r reload-fn      FN    sym   "Function to run after code changes."
+   t test-ns-regex  REGEX regex "Regex matching namespaces with tests to run after refresh."]
   (let [fs-prev-state (atom nil)
         dirs (core/get-env :directories)
         modified-namespaces (ns-tracker (into [] dirs))
         auto-start (delay
-                     (when auto-start
-                       (require dev-ns)
-                       (util/info (str "Autostarting the system: " (go) "\n"))))
+                     (require dev-ns)
+                     (when start-fn
+                       (util/info "Starting...")
+                       (util/info (str "Started: " (pr-str ((resolve start-fn))) "\n"))))
         set-refresh-dirs (delay
                            (apply clojure.tools.namespace.repl/set-refresh-dirs dirs))]
     (core/with-pre-wrap fileset
       @set-refresh-dirs
       @auto-start
       (when-let [modified (modified-namespaces)]
-        (when hot-reload
+        (when reload-fn
           (with-bindings {#'*ns* *ns* ; because of exception "Can't set!: *ns* from non-binding thread"
                           #'*e   nil}
-            (let [result (reset)]
+
+            (util/info "Reloading...")
+            (let [result ((resolve reload-fn))]
+              (util/info (str "Reloaded: " (pr-str result) "\n"))
               (when *e (throw *e))))))
       (when test-ns-regex
         (util/info (str "Running tests matching: " test-ns-regex "\n"))

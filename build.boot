@@ -6,7 +6,7 @@
     [cheshire "5.5.0"]
     [ns-tracker "0.3.0"]
     [org.clojure/clojure "1.6.0" :scope "provided"]
-    [reloaded.repl "0.1.0"]])
+    [org.clojure/tools.namespace "0.2.11"]])
 
 (require
   '[adzerk.bootlaces :refer :all]
@@ -14,7 +14,7 @@
   '[boot.util        :as util]
   '[boot.core        :as core])
 
-(def +version+ "0.3.0")
+(def +version+ "0.4.0")
 
 (bootlaces! +version+)
 
