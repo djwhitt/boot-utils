@@ -115,12 +115,12 @@
     (util/info "Adding :compiler-options %s, :init-fn %s, and :require %s to %s...\n"
                (pr-str compiler-options) init-fn ns (.getName in-file))
     (io/make-parents out-file)
-    (-> spec
-        (update-in [:require] conj ns)
-        (update-in [:init-fns] conj init-fn)
-        (update-in [:compiler-options] conj compiler-options)
-        pr-str
-        ((partial spit out-file)))))
+    (doto (-> spec
+              (update-in [:require] conj ns)
+              (update-in [:init-fns] conj init-fn)
+              (update-in [:compiler-options] merge compiler-options)
+              pr-str
+              ((partial spit out-file))))))
 
 (defn- relevant-cljs-edn [fileset ids]
   (let [relevant  (map #(str % ".cljs.edn") ids)
